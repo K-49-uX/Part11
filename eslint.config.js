@@ -10,7 +10,11 @@ module.exports = [
       'eslint.config.js',
       '.eslintrc.js',
       'node_modules/**',
-      'dist/**'
+      'dist/**',
+      '.npm-cache/**',
+      '.playwright-browsers/**',
+      'test-results/**',
+      'playwright-report/**'
     ]
   },
   js.configs.recommended,
@@ -32,6 +36,16 @@ module.exports = [
       'object-curly-spacing': ['error', 'always'],
       'arrow-spacing': ['error', { 'before': true, 'after': true }],
       'no-console': 0
+    }
+  },
+  {
+    files: ['playwright.config.js', 'e2e-tests/**/*.js'],
+    languageOptions: {
+      ecmaVersion: 2018,
+      sourceType: 'commonjs',
+      globals: {
+        ...globals.node
+      }
     }
   },
   {
