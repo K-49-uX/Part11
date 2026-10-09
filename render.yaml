@@ -2,6 +2,7 @@ services:
   - type: web
     name: fs-pokedex
     runtime: static
+    autoDeployTrigger: commit
     buildCommand: npm ci && npm run build
     staticPublishPath: ./dist
     routes:
