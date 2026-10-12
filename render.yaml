@@ -6,3 +6,4 @@ services:
     buildCommand: npm ci && npm run build
     startCommand: npm run start-prod
     healthCheckPath: /health
+#   note: You can add more services here if needed
