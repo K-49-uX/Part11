@@ -2,7 +2,7 @@ services:
   - type: web
     name: fs-pokedex-web
     runtime: node
-    autoDeployTrigger: commit
+    autoDeployTrigger: off
     buildCommand: npm ci && npm run build
     startCommand: npm run start-prod
     healthCheckPath: /health
