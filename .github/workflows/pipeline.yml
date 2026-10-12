@@ -67,3 +67,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DEFAULT_BUMP: patch
+
+
+          # Note: The following is a sample configuration for Render. You can customize it based on your application's requirements.
