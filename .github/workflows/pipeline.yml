@@ -68,3 +68,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DEFAULT_BUMP: patch
         # CUSTOM_TAG: v${{ steps.bump.outputs.new_tag }}
+
+        # The following is an example of how to use the CUSTOM_TAG variable to create a custom tag format.
+        # Uncomment the line below and modify it according to your needs.
