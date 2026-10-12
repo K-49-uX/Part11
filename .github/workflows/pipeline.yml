@@ -67,3 +67,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DEFAULT_BUMP: patch
+        # CUSTOM_TAG: v${{ steps.bump.outputs.new_tag }}
