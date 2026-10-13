@@ -119,5 +119,4 @@ jobs:
           DEFAULT_BUMP: patch
         # CUSTOM_TAG: v${{ steps.bump.outputs.new_tag }}
 
-      #  - name: Notify Discord of new release
-      #    uses: sarisia/actions-status-discord@v1
+    # periodically check for new versions and create a tag if necessary
