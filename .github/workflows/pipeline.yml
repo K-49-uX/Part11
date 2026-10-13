@@ -8,7 +8,7 @@ on:
     types: [opened, synchronize]
 
 jobs:
-  simple_deployment_pipeline:
+  build_and_test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -39,8 +39,12 @@ jobs:
       - name: Run Playwright tests
         run: npm run test:e2e
 
+  deploy:
+    needs: [build_and_test]
+    if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ' '), '#skip') }}
+    runs-on: ubuntu-latest
+    steps:
       - name: Deploy to Render
-        if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ' '), '#skip') }}
         env:
           RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
         run: |
@@ -50,8 +54,12 @@ jobs:
           }
           curl --fail --silent --show-error "$RENDER_DEPLOY_HOOK_URL"
 
+  notify_success:
+    needs: [deploy]
+    if: ${{ success() }}
+    runs-on: ubuntu-latest
+    steps:
       - name: Notify Discord of deployment
-        if: ${{ success() && github.event_name == 'push' && !contains(join(github.event.commits.*.message, ' '), '#skip') }}
         uses: sarisia/actions-status-discord@v1
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
@@ -66,8 +74,12 @@ jobs:
             [Open production site](https://fs-pokedex-web.onrender.com)
           color: 0x2ecc71
 
+  notify_failure:
+    needs: [build_and_test, deploy]
+    if: ${{ failure() }}
+    runs-on: ubuntu-latest
+    steps:
       - name: Notify Discord of pipeline failure
-        if: ${{ failure() }}
         uses: sarisia/actions-status-discord@v1
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
@@ -82,13 +94,14 @@ jobs:
             **Message:** ${{ github.event.head_commit.message || github.event.pull_request.title || 'Unavailable' }}
             **Author:** ${{ github.event.head_commit.author.name || github.event.pull_request.user.login || github.actor }}
             **Workflow:** ${{ github.workflow }}
-            **Job:** ${{ github.job }}
+            **Build and test job:** ${{ needs.build_and_test.result }}
+            **Deploy job:** ${{ needs.deploy.result }}
             [View commit](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.event.pull_request.head.sha || github.sha }})
             [View workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
           color: 0xe74c3c
 
   tag_release:
-    needs: [simple_deployment_pipeline]
+    needs: [deploy]
     if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ' '), '#skip') }}
     runs-on: ubuntu-latest
     permissions:
@@ -106,5 +119,5 @@ jobs:
           DEFAULT_BUMP: patch
         # CUSTOM_TAG: v${{ steps.bump.outputs.new_tag }}
 
-        # The above line is commented out because the action automatically creates a tag with the new version number. 
-        # If you want to customize the tag format, you can uncomment the line and modify it as needed.
+      #  - name: Notify Discord of new release
+      #    uses: sarisia/actions-status-discord@v1
