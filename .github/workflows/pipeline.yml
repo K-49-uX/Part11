@@ -50,6 +50,43 @@ jobs:
           }
           curl --fail --silent --show-error "$RENDER_DEPLOY_HOOK_URL"
 
+      - name: Notify Discord of deployment
+        if: ${{ success() && github.event_name == 'push' && !contains(join(github.event.commits.*.message, ' '), '#skip') }}
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: Success
+          title: Deployment successful
+          description: |
+            A new version was deployed to production.
+
+            **Commit:** ${{ github.sha }}
+            **Message:** ${{ github.event.head_commit.message }}
+            **Author:** ${{ github.event.head_commit.author.name }}
+            [Open production site](https://fs-pokedex-web.onrender.com)
+          color: 0x2ecc71
+
+      - name: Notify Discord of pipeline failure
+        if: ${{ failure() }}
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: Failure
+          title: Build failed
+          description: |
+            The pipeline encountered an error.
+
+            **Repository:** ${{ github.repository }}
+            **Branch:** ${{ github.head_ref || github.ref_name }}
+            **Commit:** ${{ github.event.pull_request.head.sha || github.sha }}
+            **Message:** ${{ github.event.head_commit.message || github.event.pull_request.title || 'Unavailable' }}
+            **Author:** ${{ github.event.head_commit.author.name || github.event.pull_request.user.login || github.actor }}
+            **Workflow:** ${{ github.workflow }}
+            **Job:** ${{ github.job }}
+            [View commit](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.event.pull_request.head.sha || github.sha }})
+            [View workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          color: 0xe74c3c
+
   tag_release:
     needs: [simple_deployment_pipeline]
     if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ' '), '#skip') }}
@@ -69,5 +106,5 @@ jobs:
           DEFAULT_BUMP: patch
         # CUSTOM_TAG: v${{ steps.bump.outputs.new_tag }}
 
-        # The following is an example of how to use the CUSTOM_TAG variable to create a custom tag format.
-        # Uncomment the line below and modify it according to your needs.
+        # The above line is commented out because the action automatically creates a tag with the new version number. 
+        # If you want to customize the tag format, you can uncomment the line and modify it as needed.
